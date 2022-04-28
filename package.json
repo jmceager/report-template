@@ -1,0 +1,22 @@
+{
+  "name": "report-template",
+  "version": "1.0.0",
+  "description": "Pipeline incident reporting template",
+  "main": "index.js",
+  "directories": {
+    "man": "man"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmceager/report-template.git"
+  },
+  "author": "James Eager",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jmceager/report-template/issues"
+  },
+  "homepage": "https://github.com/jmceager/report-template#readme"
+}
