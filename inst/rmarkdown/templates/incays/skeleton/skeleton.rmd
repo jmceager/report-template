@@ -37,7 +37,8 @@ library(sp)
 library(rgeos)
 library(tufte)
 library(rgdal)
-
+library(ggspatial)
+library(mapboxapi)
 
 knitr::opts_chunk$set(echo = FALSE, include = FALSE, message = FALSE)
 options(knitr.table.format = "latex")
@@ -134,7 +135,7 @@ df.adj <- read_csv("/Users/jameseager/Documents/projects/PHMSA_clean/data/all_in
          MSYS = if_else(MSYS == "UN", "UNGS",MSYS))
 ```
 
-```{r}
+```{r mileage data}
 miles <- read_csv("/Users/jameseager/Documents/projects/PHMSA_clean/data/all_inc.csv") %>%
   distinct(OPERATOR_ID, STATE, .keep_all = T)%>%
   group_by(STATE) %>%
@@ -228,11 +229,61 @@ Place margin text like this
 
 
 ## Spatial Analysis  
-```{r}
-# must brainstorm this one? mapdeck? ggmaptile?? 
-# want: mapbox tileset or OSM tileset, either way something nice to see w/ context
-# need: easy to manipulate data from tidy format to map 
-# cool: easy to style 
+```{r load state shapefile}
+projcrs <- "+proj=longlat +datum=WGS84 +no_defs"
+
+stateShape <- read_sf("/Users/jameseager/Documents/projects/PHMSA_clean/data/gis/us_states.shp")
+
+stateShape <- stateShape[stateShape$NAME == moStateL,]
+
+#mb_access_token("accesstokenhere", install = T)
+```
+
+```{r map, include = TRUE, fig.fullsize = TRUE}
+df.sp <- st_as_sf(df, 
+                  coords = c("LOCATION_LONGITUDE","LOCATION_LATITUDE"),
+                  crs = projcrs) 
+
+df.state <- st_join(df.sp, st_transform(stateShape, crs = projcrs), join = st_within) %>%
+  filter(NAME.y == moStateL)
+
+pst_tiles <- get_static_tiles(location = stateShape,
+                              zoom = 5,
+                              style_id = "cl1pbimv7000114ouzmsb6obk",
+                              username = "jimeagah",
+                              buffer_dist = 100000,
+                              crop = T)
+
+##ggspatial
+df.state%>%
+  ggplot()+
+  layer_spatial(pst_tiles)+
+  geom_sf(data = stateShape, fill = NA, color = "black")+
+  geom_sf(aes(color = MSYS), alpha = .6)+
+  scale_color_brewer(palette = "Set2", name = "System",
+                     labels = c("Gas Distribution","Gas Gathering","Gas Transmission",
+                                "Hazardous Liquids","Underground Natural Gas Storage"))+
+  coord_sf(crs = 3857,
+           xlim = c(-11465907.55, -10519691.88),
+           ylim = c(3985303.96, 4439106.79))+
+  labs(title = paste0("Incident Locations in ", moStateL),
+       subtitle = "All Systems (2010 - Present)",
+       x = NULL,
+       y = NULL,
+       caption = capt)+
+  theme_void()+
+  theme(legend.position = c(0.15,0.42), #move relative to data 
+        text = element_text(pstFont),
+        plot.title = element_text(face = "bold", colour = "#ffffff"),
+        plot.subtitle = element_text(colour = "#ffffff"),
+        legend.title = element_text(colour = "gray 90", face = "bold"),
+        legend.text = element_text(colour = "gray90"),
+        plot.background = element_rect(fill = "#457969", colour = NA)) #fill is to match bg
+
+wdt = 2560
+hgt = wdt/1.62
+ggsave("./map.png", width = wdt, height = hgt, units = "px")
+``` 
 ```
 
 
