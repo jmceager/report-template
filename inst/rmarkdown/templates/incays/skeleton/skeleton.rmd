@@ -125,7 +125,15 @@ yellow <- col[6]
 #all incident data + op mileage
 df <- read_csv("/Users/jameseager/Documents/projects/PHMSA_clean/data/all_inc.csv") %>%
   filter(STATE == moState)
+
+adj.states <- c() #insert adjacent states here 
+
+df.adj <- read_csv("/Users/jameseager/Documents/projects/PHMSA_clean/data/all_inc.csv")%>%
+  filter(STATE %in% adj.states)%>%
+  mutate(MSYS = str_sub(SYSTEM_TYPE, 1,2),
+         MSYS = if_else(MSYS == "UN", "UNGS",MSYS))
 ```
+
 
 # Pipeline Incident Analysis  
 
