@@ -134,6 +134,14 @@ df.adj <- read_csv("/Users/jameseager/Documents/projects/PHMSA_clean/data/all_in
          MSYS = if_else(MSYS == "UN", "UNGS",MSYS))
 ```
 
+```{r}
+miles <- read_csv("/Users/jameseager/Documents/projects/PHMSA_clean/data/all_inc.csv") %>%
+  distinct(OPERATOR_ID, STATE, .keep_all = T)%>%
+  group_by(STATE) %>%
+  summarise(miles = sum(mileage))
+
+stateMiles <- filter(miles, STATE == "OK") %>% select(miles)
+```
 
 # Pipeline Incident Analysis  
 
